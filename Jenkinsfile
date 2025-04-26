@@ -30,7 +30,7 @@ pipeline {
 
         stage('Build and Push Docker Image') {
             steps {
-                dir('KartingRM') {
+                dir('KartingRM/KartingRM') {
                     script {
                         withDockerRegistry([credentialsId: 'docker-credentials']) {
                             bat 'docker build -t ignacioavila23/kartingrm:latest .'
