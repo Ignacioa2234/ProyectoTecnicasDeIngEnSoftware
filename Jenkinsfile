@@ -32,6 +32,9 @@ pipeline {
             steps {
                 dir('KartingRM/KartingRM') {
                     script {
+
+                        bat 'docker context use default'
+                        
                         withDockerRegistry([credentialsId: 'docker-credentials']) {
                             bat 'docker build -t ignacioavila23/kartingrm:latest .'
                             bat 'docker push ignacioavila23/kartingrm:latest'
