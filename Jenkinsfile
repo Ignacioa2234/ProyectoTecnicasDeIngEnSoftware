@@ -8,14 +8,13 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Asume que este Jenkinsfile está en la rama main del repo
                 checkout scm
             }
         }
 
         stage('Build JAR File') {
             steps {
-                dir('KartingRM') {
+                dir('KartingRM/KartingRM') {
                     bat 'mvn clean install'
                 }
             }
@@ -23,7 +22,7 @@ pipeline {
 
         stage('Tests') {
             steps {
-                dir('KartingRM') {
+                dir('KartingRM/KartingRM') {
                     bat 'mvn test'
                 }
             }
