@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ReservationService from '../services/reservation.service';
 import VoucherService     from '../services/voucher.service';
+import ClientService      from '../services/client.service';
 
 const initialForm = {
   reservationDate: '',
@@ -17,29 +18,36 @@ export default function ReservationForm() {
   const [form, setForm]             = useState(initialForm);
   const [message, setMessage]       = useState(null);
   const [createdRes, setCreatedRes] = useState(null);
+  const [user, setUser]             = useState(null);
+  const [newClient, setNewClient]   = useState({
+    name: '',
+    email: '',
+    birthDate: '',
+    password: ''
+  });
 
-  // 1) Al montar: precargamos al cliente logueado en la primera fila
+  // Al montar, si hay currentUser en localStorage lo cargamos
   useEffect(() => {
     const raw = localStorage.getItem('currentUser');
-    if (!raw) return;
-    const user = JSON.parse(raw);
-    setForm(f => ({
-      ...f,
-      participants: [{
-        name:      user.name,
-        email:     user.email,
-        birthDate: user.birthDate?.slice(0,10) || ''
-      }]
-    }));
+    if (raw) {
+      const u = JSON.parse(raw);
+      setUser(u);
+      setForm(f => ({
+        ...f,
+        participants: [{
+          name:      u.name,
+          email:     u.email,
+          birthDate: u.birthDate?.slice(0,10) || ''
+        }]
+      }));
+    }
   }, []);
 
-  // Actualiza campos simples del formulario
   const handleChange = e => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
   };
 
-  // Actualiza un participante en particular
   const handleParticipantChange = (idx, e) => {
     const { name, value } = e.target;
     setForm(f => {
@@ -49,7 +57,11 @@ export default function ReservationForm() {
     });
   };
 
-  // Añade una fila de participante adicional
+  const handleNewClientChange = e => {
+    const { name, value } = e.target;
+    setNewClient(c => ({ ...c, [name]: value }));
+  };
+
   const addParticipant = () => {
     setForm(f => ({
       ...f,
@@ -57,75 +69,88 @@ export default function ReservationForm() {
     }));
   };
 
-  // Genera opciones de hora de 08:00 a 22:00
   const hourOptions = Array.from({ length: 15 }, (_, i) => {
     const h = 8 + i;
     return `${h.toString().padStart(2,'0')}:00`;
   });
 
-  // Envía el formulario para crear la reserva
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
+
+    // 1) Si no hay user, creamos cliente nuevo
+    let clientToUse = user;
+    if (!user) {
+      const { name, email, birthDate, password } = newClient;
+      if (!name || !email || !birthDate || !password) {
+        setMessage({ type:'danger', text:'Completa todos los datos del cliente.' });
+        return;
+      }
+      try {
+        const resClient = await ClientService.create({ name, email, birthDate, password });
+        clientToUse = resClient.data;
+      } catch (err) {
+        console.error('Error creando cliente:', err);
+        const txt = err.response?.data?.message
+                   || JSON.stringify(err.response?.data)
+                   || 'Error al crear cliente.';
+        setMessage({ type:'danger', text: txt });
+        return;
+      }
+    }
+
+    // 2) Armamos y enviamos payload de reserva
     const timestamp = Date.now();
     const reservationDateTime = `${form.reservationDate}T${form.reservationTime}`;
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-
     const payload = {
-      reservationCode: `RES${timestamp}`,
+      reservationCode:   `RES${timestamp}`,
       reservationDateTime,
-      maxLapsOrTime:  Number(form.maxLapsOrTime),
-      peopleCount:    Number(form.peopleCount),
-      assignedKarts:  [],                 // el backend asigna automáticamente
-      client:         { id: user.id },    // cliente logueado
-      groupEmails:    form.participants.map(p => p.email),
-      participants:   form.participants.map(p => ({
-        name:      p.name,
-        email:     p.email,
-        birthDate: p.birthDate
-      }))
+      maxLapsOrTime:     Number(form.maxLapsOrTime),
+      peopleCount:       Number(form.peopleCount),
+      assignedKarts:     [],
+      client:            { id: clientToUse.id },
+      groupEmails:       form.participants.map(p => p.email),
+      participants:      form.participants.map(p => ({
+                           name:      p.name,
+                           email:     p.email,
+                           birthDate: p.birthDate
+                         }))
     };
 
-    ReservationService.create(payload)
-      .then(res => {
-        setCreatedRes(res.data);
-        setMessage({
-          type: 'info',
-          text: 'Reserva creada. Ahora confirma para generar el voucher.'
-        });
-      })
-      .catch(err => {
-        console.error(err);
-        const data = err.response?.data;
-        const txt  = data?.message
-                   || (typeof data === 'object'
-                       ? JSON.stringify(data)
-                       : data)
-                   || 'Error al crear la reserva.';
-        setMessage({ type: 'danger', text: txt });
-      });
+    try {
+      const res = await ReservationService.create(payload);
+      if (!res.data?.id) {
+        setMessage({ type:'danger', text:'La reserva no devolvió un ID válido.' });
+        return;
+      }
+      setCreatedRes(res.data);
+      setMessage({ type:'info', text:'Reserva creada. Ahora confirma voucher.' });
+    } catch (err) {
+      console.error('Error creando reserva:', err);
+      const txt = err.response?.data?.message
+                 || JSON.stringify(err.response?.data)
+                 || 'Error al crear reserva.';
+      setMessage({ type:'danger', text: txt });
+    }
   };
 
-  // Genera el voucher tras confirmar
-  const handleConfirmVoucher = () => {
-    VoucherService.createVoucher({ reservation: { id: createdRes.id } })
-      .then(res => {
-        setMessage({
-          type: 'success',
-          text: `Voucher ${res.data.voucherCode} generado y enviado.`
-        });
-        setCreatedRes(null);
-        setForm(initialForm);
-      })
-      .catch(err => {
-        console.error(err);
-        const data = err.response?.data;
-        const txt  = data?.message
-                   || (typeof data === 'object'
-                       ? JSON.stringify(data)
-                       : data)
-                   || 'Error al generar el voucher.';
-        setMessage({ type: 'danger', text: txt });
-      });
+  const handleConfirmVoucher = async () => {
+    if (!createdRes?.id) {
+      setMessage({ type:'danger', text:'Debes crear la reserva antes de confirmar.' });
+      return;
+    }
+    try {
+      const res = await VoucherService.create({ reservation: { id: createdRes.id } });
+      setMessage({ type:'success', text:`Voucher ${res.data.voucherCode} generado.` });
+      setCreatedRes(null);
+      setForm(initialForm);
+      if (!user) setNewClient({ name:'', email:'', birthDate:'', password:'' });
+    } catch (err) {
+      console.error('Error generando voucher:', err);
+      const txt = err.response?.data?.message
+                 || JSON.stringify(err.response?.data)
+                 || 'Error al generar voucher.';
+      setMessage({ type:'danger', text: txt });
+    }
   };
 
   return (
@@ -139,8 +164,62 @@ export default function ReservationForm() {
       )}
 
       <form onSubmit={handleSubmit}>
+        {/* -- DATOS DEL CLIENTE NUEVO (solo si no está logueado) -- */}
+        {!user && (
+          <>
+            <h5>Datos del Cliente</h5>
+            <div className="row g-3 mb-4">
+              <div className="col-md-3">
+                <label className="form-label">Nombre</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="name"
+                  value={newClient.name}
+                  onChange={handleNewClientChange}
+                  required
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  name="email"
+                  value={newClient.email}
+                  onChange={handleNewClientChange}
+                  required
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label">Fecha Nac.</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  name="birthDate"
+                  value={newClient.birthDate}
+                  onChange={handleNewClientChange}
+                  required
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label">Contraseña</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  name="password"
+                  value={newClient.password}
+                  onChange={handleNewClientChange}
+                  required
+                />
+              </div>
+            </div>
+            <hr />
+          </>
+        )}
+
+        {/* -- RESERVA: Fecha, Hora, Tarifa, Personas -- */}
         <div className="row g-3">
-          {/* Fecha de Reserva */}
           <div className="col-md-4">
             <label className="form-label">Fecha de Reserva</label>
             <input
@@ -152,7 +231,6 @@ export default function ReservationForm() {
               required
             />
           </div>
-          {/* Hora de Reserva */}
           <div className="col-md-4">
             <label className="form-label">Hora de Reserva</label>
             <select
@@ -168,7 +246,6 @@ export default function ReservationForm() {
               ))}
             </select>
           </div>
-          {/* Tarifa */}
           <div className="col-md-4">
             <label className="form-label">Tarifa</label>
             <select
@@ -184,23 +261,21 @@ export default function ReservationForm() {
               <option value="20">20 vueltas / máx 20 min</option>
             </select>
           </div>
-          {/* Número de Personas */}
           <div className="col-md-4">
             <label className="form-label"># Personas</label>
             <input
               type="number"
-              className="form-control"
-              name="peopleCount"
-              value={form.peopleCount}
-              onChange={handleChange}
-              required
-            />
+                  className="form-control"
+                  name="peopleCount"
+                  value={form.peopleCount}
+                  onChange={handleChange}
+                  required
+                />
           </div>
         </div>
 
         <hr className="my-4" />
         <h5>Participantes</h5>
-
         {form.participants.map((p, idx) => (
           <div className="row g-3 mb-3" key={idx}>
             <div className="col-md-4">
@@ -238,7 +313,6 @@ export default function ReservationForm() {
             </div>
           </div>
         ))}
-
         <button
           type="button"
           className="btn btn-link"

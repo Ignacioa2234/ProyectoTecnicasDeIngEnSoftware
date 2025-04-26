@@ -1,33 +1,9 @@
-// src/services/client.service.js
-import axios from 'axios';
-
-const API_URL = '/api/clients';
-
+import http from '../http-common';
 class ClientService {
-  // Trae todos los clientes
-  getAll() {
-    return axios.get(API_URL);
-  }
-
-  // Trae un cliente por su ID
-  get(id) {
-    return axios.get(`${API_URL}/${id}`);
-  }
-
-  // Crea un nuevo cliente
-  create(data) {
-    return axios.post(API_URL, data);
-  }
-
-  // Actualiza un cliente existente
-  update(id, data) {
-    return axios.put(`${API_URL}/${id}`, data);
-  }
-
-  // Elimina un cliente por ID
-  delete(id) {
-    return axios.delete(`${API_URL}/${id}`);
-  }
+  getAll()    { return http.get('/clients'); }
+  get(id)    { return http.get(`/clients/${id}`); }
+  create(d)  { return http.post('/clients', d); }
+  update(i,d){ return http.put(`/clients/${i}`, d); }
+  delete(i)  { return http.delete(`/clients/${i}`); }
 }
-
 export default new ClientService();

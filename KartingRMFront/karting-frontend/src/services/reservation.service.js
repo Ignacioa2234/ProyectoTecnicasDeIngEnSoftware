@@ -1,27 +1,9 @@
-import axios from 'axios';
-
-const API_URL = '/api/reservations';
-
+import http from '../http-common';
 class ReservationService {
-  getAll() {
-    return axios.get(API_URL);
-  }
-
-  get(id) {
-    return axios.get(`${API_URL}/${id}`);
-  }
-
-  create(data) {
-    return axios.post(API_URL, data);
-  }
-
-  update(id, data) {
-    return axios.put(`${API_URL}/${id}`, data);
-  }
-
-  delete(id) {
-    return axios.delete(`${API_URL}/${id}`);
-  }
+  getAll()      { return http.get('/reservations'); }
+  get(id)      { return http.get(`/reservations/${id}`); }
+  create(d)    { return http.post('/reservations', d); }
+  update(i, d) { return http.put(`/reservations/${i}`, d); }
+  delete(i)    { return http.delete(`/reservations/${i}`); }
 }
-
 export default new ReservationService();

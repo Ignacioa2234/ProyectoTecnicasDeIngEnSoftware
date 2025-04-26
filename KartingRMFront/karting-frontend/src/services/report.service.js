@@ -1,32 +1,7 @@
-// src/services/report.service.js
-import axios from 'axios';
-
-const API_URL = '/api/reports';
-
+import http from '../http-common';
 class ReportService {
-  // Genera un reporte con parámetros
-  generate(start, end, type) {
-    return axios.post(`${API_URL}/generate`, {
-      start,
-      end,
-      reportType: type
-    });
-  }
-
-  // Obtiene el calendario de reportes generados
-  schedule(start, end) {
-    return axios.get(`${API_URL}/schedule`, {
-      params: { start, end }
-    });
-  }
-
-  // Trae todos los reportes (o por tipo)
-  getAll(type) {
-    const url = type
-      ? `${API_URL}?type=${type}`
-      : API_URL;
-    return axios.get(url);
-  }
+  generate(s,e,t){ return http.post('/reports/generate',{ start:s,end:e,reportType:t }); }
+  schedule(s,e)  { return http.get('/reports/schedule',{ params:{ start:s,end:e }}); }
+  getAll(t)      { return http.get(t?`/reports?type=${t}`:'/reports'); }
 }
-
 export default new ReportService();
