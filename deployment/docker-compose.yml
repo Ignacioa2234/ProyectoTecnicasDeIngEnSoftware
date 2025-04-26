@@ -1,0 +1,77 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: kartingrm-db
+    environment:
+      MYSQL_ROOT_PASSWORD: "Ignacito1."
+      MYSQL_DATABASE: "kartingrm_db"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      ge-network:
+        aliases: [ db ]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend-app:
+    build:
+      context: ../KartingRM/KartingRM
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL:      "jdbc:mysql://db:3306/kartingrm_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "Ignacito1."
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure      # para que, si aún así arranca mal, trate de reiniciar
+    networks:
+      - ge-network
+
+  # 3) Frontend (se construye desde tu código)
+  front-app:
+    build:
+      context: ../KartingRMFront/karting-frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend-app
+    networks:
+      - ge-network
+
+  # 4) Load-balancer del backend
+  backend-lb:
+    image: nginx:alpine
+    container_name: backend-lb
+    ports:
+      - "8010:80"
+    volumes:
+      - ./backend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend-app
+    networks:
+      - ge-network
+
+  # 5) Load-balancer del frontend
+  front-lb:
+    image: nginx:alpine
+    container_name: front-lb
+    ports:
+      - "8070:80"
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro
+      - ./frontend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend-app
+    networks:
+      - ge-network
+
+
+networks:
+  ge-network:
+    driver: bridge
+
+volumes:
+  mysql-data:

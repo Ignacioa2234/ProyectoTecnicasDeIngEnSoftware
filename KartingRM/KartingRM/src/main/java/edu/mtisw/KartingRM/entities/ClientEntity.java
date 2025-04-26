@@ -1,0 +1,33 @@
+package edu.mtisw.KartingRM.entities;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "clients")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+
+public class ClientEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column
+    private String name;
+
+    @Column
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate birthDate;
+
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+}
