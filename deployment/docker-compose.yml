@@ -32,8 +32,7 @@ services:
 
   # 3) Frontend (se construye desde tu código)
   front-app:
-    build:
-      image: ignacioavila23/karting-frontend:latest
+    image: ignacioavila23/karting-frontend:latest
     depends_on:
       - backend-app
     networks:
