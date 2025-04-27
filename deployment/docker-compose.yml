@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+  # 1) Base de datos
   db:
     image: mysql:8.0
     container_name: kartingrm-db
@@ -20,10 +21,12 @@ services:
       timeout: 5s
       retries: 5
 
+  # 2) Backend (se construye desde tu código)
   backend-app:
     build:
-      context: ../KartingRM       # carpeta con tu proyecto Spring Boot
+      context: ../KartingRM
       dockerfile: Dockerfile
+    image: ignacioavila23/kartingrm:latest
     environment:
       SPRING_DATASOURCE_URL:      "jdbc:mysql://db:3306/kartingrm_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
       SPRING_DATASOURCE_USERNAME: "root"
@@ -35,15 +38,18 @@ services:
     networks:
       - ge-network
 
+  # 3) Frontend (se construye desde tu código)
   front-app:
     build:
-      context: ../KartingRMFront/karting-frontend   # carpeta con tu código React/Vite
+      context: ../KartingRMFront/karting-frontend
       dockerfile: Dockerfile
+    image: ignacioavila23/karting-frontend:latest
     depends_on:
       - backend-app
     networks:
       - ge-network
 
+  # 4) Load-balancer del backend
   backend-lb:
     image: nginx:alpine
     container_name: backend-lb
@@ -56,17 +62,17 @@ services:
     networks:
       - ge-network
 
+  # 5) Load-balancer del frontend
   front-lb:
     image: nginx:alpine
     container_name: front-lb
     ports:
       - "8070:80"
     volumes:
-      # Asume que has generado un dist/ local con `npm run build`
-      - ./dist:/usr/share/nginx/html:ro
+      - ../KartingRMFront/karting-frontend/dist:/usr/share/nginx/html:ro
       - ./nginx/frontend.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - backend-app
+      - front-app
     networks:
       - ge-network
 
