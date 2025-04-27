@@ -192,7 +192,7 @@ export default function ReservationForm() {
                 />
               </div>
               <div className="col-md-3">
-                <label className="form-label">Fecha Nac.</label>
+                <label className="form-label">Fecha de Nacimiento</label>
                 <input
                   type="date"
                   className="form-control"

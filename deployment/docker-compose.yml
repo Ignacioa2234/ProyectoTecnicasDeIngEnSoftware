@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-  # 1) Base de datos
   db:
     image: mysql:8.0
     container_name: kartingrm-db
@@ -13,19 +12,14 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       ge-network:
-        aliases:
-          - db
+        aliases: [ db ]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # 2) Backend (se construye desde tu código)
   backend-app:
-    build:
-      context: ../KartingRM
-      dockerfile: Dockerfile
     image: ignacioavila23/kartingrm:latest
     environment:
       SPRING_DATASOURCE_URL:      "jdbc:mysql://db:3306/kartingrm_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
@@ -38,18 +32,13 @@ services:
     networks:
       - ge-network
 
-  # 3) Frontend (se construye desde tu código)
   front-app:
-    build:
-      context: ../KartingRMFront/karting-frontend
-      dockerfile: Dockerfile
     image: ignacioavila23/karting-frontend:latest
     depends_on:
       - backend-app
     networks:
       - ge-network
 
-  # 4) Load-balancer del backend
   backend-lb:
     image: nginx:alpine
     container_name: backend-lb
@@ -62,7 +51,6 @@ services:
     networks:
       - ge-network
 
-  # 5) Load-balancer del frontend
   front-lb:
     image: nginx:alpine
     container_name: front-lb
