@@ -3,6 +3,7 @@ package edu.mtisw.KartingRM.controllers;
 import edu.mtisw.KartingRM.entities.ReservationEntity;
 import edu.mtisw.KartingRM.services.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +50,15 @@ public class ReservationController {
         return ResponseEntity
                 .created(location)
                 .body(created);
+    }
+
+    @GetMapping(params = {"start","end"})
+    public ResponseEntity<List<ReservationEntity>> getReservationsBetween(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
+    ) {
+        List<ReservationEntity> list = reservationService.getReservationsBetween(start, end);
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
     @GetMapping

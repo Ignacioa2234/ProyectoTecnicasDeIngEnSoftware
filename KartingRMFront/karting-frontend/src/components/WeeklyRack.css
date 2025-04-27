@@ -1,0 +1,10 @@
+/* src/components/WeeklyRack.css */
+.weekly-rack .rbc-toolbar {
+    margin-bottom: 1rem;
+  }
+  .weekly-rack .rbc-day-slot .rbc-event {
+    background-color: #0d6efd;
+    border: none;
+    color: white;
+  }
+  
