@@ -24,7 +24,9 @@ pipeline {
             steps {
                 dir('KartingRMFront/karting-frontend') {
                     script {
-                        // Autenticarse con Docker Hub (credenciales 'docker-credentials')
+                        
+                        bat 'docker context use default'
+
                         withDockerRegistry([ credentialsId: 'docker-credentials' ]) {
                             // Construir y subir la imagen
                             bat 'docker build -t ignacioavila23/karting-frontend:latest .'
