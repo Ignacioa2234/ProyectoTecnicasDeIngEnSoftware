@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build Frontend') {
+            steps {
+                // Clonar tu repo y quedarse en la rama main
+                checkout scmGit(
+                    branches: [[ name: '*/main' ]],
+                    extensions: [],
+                    userRemoteConfigs: [[ url: 'https://github.com/Ignacioa2234/ProyectoTecnicasDeIngEnSoftware' ]]
+                )
+
+                // Entrar al sub-módulo del front
+                dir('KartingRMFront/karting-frontend') {
+                    // Instalar dependencias y compilar
+                    bat 'npm ci'
+                    bat 'npm run build'
+                }
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            steps {
+                dir('KartingRMFront/karting-frontend') {
+                    script {
+                        // Autenticarse con Docker Hub (credenciales 'docker-credentials')
+                        withDockerRegistry([ credentialsId: 'docker-credentials' ]) {
+                            // Construir y subir la imagen
+                            bat 'docker build -t ignacioavila23/karting-frontend:latest .'
+                            bat 'docker push ignacioavila23/karting-frontend:latest'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
