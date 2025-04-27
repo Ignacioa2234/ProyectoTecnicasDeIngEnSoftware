@@ -18,9 +18,7 @@ services:
       retries: 5
 
   backend-app:
-    build:
-      context: ../KartingRM/KartingRM
-      dockerfile: Dockerfile
+    image: ignacioavila23/kartingrm:latest
     environment:
       SPRING_DATASOURCE_URL:      "jdbc:mysql://db:3306/kartingrm_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
       SPRING_DATASOURCE_USERNAME: "root"
@@ -35,8 +33,7 @@ services:
   # 3) Frontend (se construye desde tu código)
   front-app:
     build:
-      context: ../KartingRMFront/karting-frontend
-      dockerfile: Dockerfile
+      image: ignacioavila23/karting-frontend:latest
     depends_on:
       - backend-app
     networks:
