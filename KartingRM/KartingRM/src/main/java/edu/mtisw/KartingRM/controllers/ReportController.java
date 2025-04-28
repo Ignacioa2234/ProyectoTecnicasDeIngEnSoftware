@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -24,29 +23,29 @@ public class ReportController {
 
     @GetMapping("/laps-time")
     public ResponseEntity<List<ReportEntity>> getLapsTimeReport(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+        @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
         LocalDateTime startDt = start.atStartOfDay();
-        LocalDateTime endDt   = end.atTime(LocalTime.MAX);
+        LocalDateTime endDt   = end.atTime(23, 59, 59);
         List<ReportEntity> reports = reportService.getLapsTimeReport(startDt, endDt);
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
     @GetMapping("/group-size")
     public ResponseEntity<List<ReportEntity>> getGroupSizeReport(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+        @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
         LocalDateTime startDt = start.atStartOfDay();
-        LocalDateTime endDt   = end.atTime(LocalTime.MAX);
+        LocalDateTime endDt   = end.atTime(23, 59, 59);
         List<ReportEntity> reports = reportService.getPeopleCountReport(startDt, endDt);
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<List<ReportEntity>> getAllReports(
-            @RequestParam(value = "type", required = false) String type
+        @RequestParam(value = "type", required = false) String type
     ) {
         List<ReportEntity> reports;
         if (type != null && !type.isEmpty()) {
@@ -76,11 +75,11 @@ public class ReportController {
 
     @GetMapping("/schedule")
     public ResponseEntity<List<VoucherEntity>> getWeeklySchedule(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+        @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
         LocalDateTime startDt = start.atStartOfDay();
-        LocalDateTime endDt   = end.atTime(LocalTime.MAX);
+        LocalDateTime endDt   = end.atTime(23, 59, 59);
         List<VoucherEntity> schedule = reportService.getWeeklySchedule(startDt, endDt);
         return new ResponseEntity<>(schedule, HttpStatus.OK);
     }
