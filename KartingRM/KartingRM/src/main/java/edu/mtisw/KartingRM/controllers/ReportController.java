@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -62,7 +63,20 @@ public class ReportController {
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(reports, HttpStatus.CREATED);
+
+        List<ReportEntity> saved = new ArrayList<>();
+        for (ReportEntity r : reports) {
+            ReportEntity toSave = new ReportEntity(
+                r.getReportType(),
+                r.getMonthName(),
+                r.getAggregationKey(),
+                r.getTotalIncome().doubleValue(),
+                r.getReservationCount()
+            );
+            saved.add(reportService.saveReport(toSave));
+        }
+
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 
     @GetMapping("/schedule")
