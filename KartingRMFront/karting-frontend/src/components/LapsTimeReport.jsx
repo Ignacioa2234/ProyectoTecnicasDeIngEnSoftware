@@ -1,11 +1,12 @@
+// src/components/LapsTimeReport.jsx
 import React, { useState } from 'react';
 import ReportService from '../services/report.service';
 import './Reports.css';
 
 export default function LapsTimeReport() {
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate]     = useState('');
-  const [reports, setReports]     = useState([]);
+  const [startDate, setStartDate]   = useState('');
+  const [endDate, setEndDate]       = useState('');
+  const [reports, setReports]       = useState([]);
 
   const handleGenerate = async e => {
     e.preventDefault();
