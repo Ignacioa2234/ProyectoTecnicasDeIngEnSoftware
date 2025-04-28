@@ -8,26 +8,33 @@
   align-items: center;
   margin-bottom: 1rem;
 }
-.report-form label {
-  margin-right: 0.25rem;
+.report-form label { margin-right: 0.25rem; }
+.report-form input, .report-form button {
+  padding: 0.3rem 0.6rem;
 }
-.report-form input {
-  padding: 0.25rem 0.5rem;
+.report-dates {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.5rem;
 }
-.report-form button {
-  padding: 0.5rem 1rem;
+.report-dates td {
+  padding: 0.3rem 0.5rem;
+  border: none;
+  font-weight: bold;
 }
 .report-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
 }
 .report-table th,
 .report-table td {
   border: 1px solid #ddd;
   padding: 0.5rem;
-  text-align: left;
+  text-align: center;
 }
 .report-table th {
   background-color: #f8f9fa;
+}
+.total-row td {
+  background-color: #f1f1f1;
 }
