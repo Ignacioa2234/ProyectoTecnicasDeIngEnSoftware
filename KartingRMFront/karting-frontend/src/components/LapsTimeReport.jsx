@@ -4,70 +4,71 @@ import ReportService from '../services/report.service';
 import './Reports.css';
 
 export default function LapsTimeReport() {
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
-  const [data, setData] = useState([]);
+  const [monthStart, setMonthStart] = useState('');
+  const [monthEnd, setMonthEnd]     = useState('');
+  const [rows, setRows]             = useState([]);
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    ReportService.getLapsTimeReport(start, end)
-      .then(res => setData(res.data))
-      .catch(console.error);
+    const [y1, m1] = monthStart.split('-');
+    const [y2, m2] = monthEnd.split('-');
+    const start = new Date(y1, m1 - 1, 1).toISOString();
+    const lastDay = new Date(y2, m2, 0).getDate();
+    const end = new Date(y2, m2 - 1, lastDay).toISOString();
+
+    try {
+      const res = await ReportService.getLapsTime(start, end);
+      setRows(res.data);
+    } catch (err) {
+      console.error(err);
+      alert('Error al generar reporte');
+    }
   };
 
-  const { months, rows, grandTotal } = (() => {
-    const plans = ['10', '15', '20'];
-    const ms = [...new Set(data.map(d => d.month))].sort();
-    const rs = plans.map(plan => {
-      const vals = ms.map(m => {
-        const r = data.find(d => d.plan === plan && d.month === m);
-        return r ? r.amount : 0;
-      });
-      return { plan, vals, total: vals.reduce((a,b)=>a+b,0) };
-    });
-    const gt = rs.reduce((s,r)=>s+r.total,0);
-    return { months: ms, rows: rs, grandTotal: gt };
-  })();
-
   return (
-    <div className="reports-container">
-      <h2>Reporte Ingresos por Vueltas/Tiempo</h2>
-      <form onSubmit={handleSubmit} className="reports-form">
-        <input type="date" value={start} onChange={e=>setStart(e.target.value)} required/>
-        <input type="date" value={end}   onChange={e=>setEnd(e.target.value)}   required/>
+    <div className="report-container">
+      <h2>Ingresos por Vueltas / Tiempo</h2>
+      <form className="report-form" onSubmit={handleSubmit}>
+        <div>
+          <label>Desde (mes/año)</label>
+          <input
+            type="month"
+            value={monthStart}
+            onChange={e => setMonthStart(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Hasta (mes/año)</label>
+          <input
+            type="month"
+            value={monthEnd}
+            onChange={e => setMonthEnd(e.target.value)}
+            required
+          />
+        </div>
         <button type="submit">Generar</button>
       </form>
-      {data.length > 0 && (
-        <table className="reports-table">
+
+      {rows.length > 0 && (
+        <table className="report-table">
           <thead>
             <tr>
-              <th>Vueltas / Tiempo</th>
-              {months.map(m => <th key={m}>{m}</th>)}
-              <th>TOTAL</th>
+              <th>Tarifa</th>
+              {rows[0].values.map((_, i) =>
+                <th key={i}>{rows[0].labels[i]}</th>
+              )}
+              <th>Total</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(r => (
-              <tr key={r.plan}>
-                <td>{
-                  r.plan === '10'
-                    ? '10 vueltas / máx 10 min'
-                    : r.plan === '15'
-                      ? '15 vueltas / máx 15 min'
-                      : '20 vueltas / máx 20 min'
-                }</td>
-                {r.vals.map((v,i) => <td key={i}>{v.toLocaleString()}</td>)}
-                <td>{r.total.toLocaleString()}</td>
+            {rows.map(row => (
+              <tr key={row.category}>
+                <td>{row.category}</td>
+                {row.values.map((v, i) => <td key={i}>{v}</td>)}
+                <td>{row.total}</td>
               </tr>
             ))}
-            <tr>
-              <td>TOTAL</td>
-              {months.map((_,i) => {
-                const col = rows.reduce((s,r)=>s + r.vals[i],0);
-                return <td key={i}>{col.toLocaleString()}</td>;
-              })}
-              <td>{grandTotal.toLocaleString()}</td>
-            </tr>
           </tbody>
         </table>
       )}

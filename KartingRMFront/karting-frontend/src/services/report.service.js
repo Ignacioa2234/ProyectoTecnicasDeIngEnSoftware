@@ -1,12 +1,16 @@
-// src/services/report.service.js
 import http from '../http-common';
 
 class ReportService {
-  getLapsTimeReport(start, end) {
-    return http.get('/reports/laps-time', { params: { start, end } });
+  getLapsTime(start, end) {
+    return http.get('/reports/laps-time', {
+      params: { start, end }
+    });
   }
-  getPeopleCountReport(start, end) {
-    return http.get('/reports/group-size', { params: { start, end } });
+
+  getGroupSize(start, end) {
+    return http.get('/reports/group-size', {
+      params: { start, end }
+    });
   }
 }
 
