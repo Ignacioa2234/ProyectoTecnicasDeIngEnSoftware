@@ -24,23 +24,33 @@ public class ReportController {
 
     @GetMapping("/laps-time")
     public ResponseEntity<List<ReportEntity>> getLapsTimeReport(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+            @RequestParam("start")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate start,
+            @RequestParam("end")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate end
     ) {
         LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime   = end.atTime(LocalTime.MAX);
-        List<ReportEntity> reports  = reportService.getLapsTimeReport(startDateTime, endDateTime);
+        LocalDateTime endDateTime = end.withDayOfMonth(end.lengthOfMonth())
+                                        .atTime(LocalTime.MAX);
+        List<ReportEntity> reports = reportService.getLapsTimeReport(startDateTime, endDateTime);
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
     @GetMapping("/group-size")
     public ResponseEntity<List<ReportEntity>> getGroupSizeReport(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+            @RequestParam("start")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate start,
+            @RequestParam("end")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate end
     ) {
         LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime   = end.atTime(LocalTime.MAX);
-        List<ReportEntity> reports  = reportService.getPeopleCountReport(startDateTime, endDateTime);
+        LocalDateTime endDateTime = end.withDayOfMonth(end.lengthOfMonth())
+                                        .atTime(LocalTime.MAX);
+        List<ReportEntity> reports = reportService.getPeopleCountReport(startDateTime, endDateTime);
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
@@ -60,8 +70,8 @@ public class ReportController {
     @PostMapping("/generate")
     public ResponseEntity<List<ReportEntity>> generateReport(@RequestBody ReportRequest request) {
         LocalDateTime start = request.getStart();
-        LocalDateTime end   = request.getEnd();
-        String type         = request.getReportType();
+        LocalDateTime end = request.getEnd();
+        String type = request.getReportType();
 
         List<ReportEntity> reports;
         if ("laps".equalsIgnoreCase(type)) {
@@ -76,11 +86,16 @@ public class ReportController {
 
     @GetMapping("/schedule")
     public ResponseEntity<List<VoucherEntity>> getWeeklySchedule(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+            @RequestParam("start")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate start,
+            @RequestParam("end")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate end
     ) {
         LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime   = end.atTime(LocalTime.MAX);
+        LocalDateTime endDateTime = end.withDayOfMonth(end.lengthOfMonth())
+                                        .atTime(LocalTime.MAX);
         List<VoucherEntity> schedule = reportService.getWeeklySchedule(startDateTime, endDateTime);
         return new ResponseEntity<>(schedule, HttpStatus.OK);
     }
@@ -91,6 +106,7 @@ public class ReportController {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         private LocalDateTime end;
         private String reportType;
+
         public LocalDateTime getStart() { return start; }
         public void setStart(LocalDateTime start) { this.start = start; }
         public LocalDateTime getEnd() { return end; }
