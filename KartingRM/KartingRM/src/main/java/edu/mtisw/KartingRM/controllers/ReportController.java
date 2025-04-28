@@ -27,9 +27,9 @@ public class ReportController {
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
-        LocalDateTime startDT = start.atStartOfDay();
-        LocalDateTime endDT   = end.atTime(LocalTime.MAX);
-        List<ReportEntity> reports = reportService.getLapsTimeReport(startDT, endDT);
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime   = end.atTime(LocalTime.MAX);
+        List<ReportEntity> reports  = reportService.getLapsTimeReport(startDateTime, endDateTime);
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
@@ -38,9 +38,9 @@ public class ReportController {
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
-        LocalDateTime startDT = start.atStartOfDay();
-        LocalDateTime endDT   = end.atTime(LocalTime.MAX);
-        List<ReportEntity> reports = reportService.getPeopleCountReport(startDT, endDT);
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime   = end.atTime(LocalTime.MAX);
+        List<ReportEntity> reports  = reportService.getPeopleCountReport(startDateTime, endDateTime);
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
@@ -79,9 +79,9 @@ public class ReportController {
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
-        LocalDateTime startDT = start.atStartOfDay();
-        LocalDateTime endDT   = end.atTime(LocalTime.MAX);
-        List<VoucherEntity> schedule = reportService.getWeeklySchedule(startDT, endDT);
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime   = end.atTime(LocalTime.MAX);
+        List<VoucherEntity> schedule = reportService.getWeeklySchedule(startDateTime, endDateTime);
         return new ResponseEntity<>(schedule, HttpStatus.OK);
     }
 
@@ -91,7 +91,6 @@ public class ReportController {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         private LocalDateTime end;
         private String reportType;
-
         public LocalDateTime getStart() { return start; }
         public void setStart(LocalDateTime start) { this.start = start; }
         public LocalDateTime getEnd() { return end; }
