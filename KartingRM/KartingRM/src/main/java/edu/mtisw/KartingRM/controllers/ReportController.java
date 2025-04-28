@@ -9,14 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/reports")
-@CrossOrigin("*")
+@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS })
 public class ReportController {
 
     @Autowired
@@ -24,23 +22,19 @@ public class ReportController {
 
     @GetMapping("/laps-time")
     public ResponseEntity<List<ReportEntity>> getLapsTimeReport(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
     ) {
-        LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime   = end.atTime(LocalTime.MAX);
-        List<ReportEntity> reports = reportService.getLapsTimeReport(startDateTime, endDateTime);
+        List<ReportEntity> reports = reportService.getLapsTimeReport(start, end);
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
     @GetMapping("/group-size")
     public ResponseEntity<List<ReportEntity>> getGroupSizeReport(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam("end")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
     ) {
-        LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime   = end.atTime(LocalTime.MAX);
-        List<ReportEntity> reports = reportService.getPeopleCountReport(startDateTime, endDateTime);
+        List<ReportEntity> reports = reportService.getPeopleCountReport(start, end);
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
