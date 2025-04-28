@@ -2,15 +2,14 @@
 import http from '../http-common';
 
 class ReportService {
-  getLapsTimeReport(start, end) {
-    return http.get('/reports/laps-time', {
-      params: { start, end }
-    });
+  generateReport(start, end, type) {
+    return http.post('/reports/generate', { start, end, reportType: type });
   }
-  getPeopleCountReport(start, end) {
-    return http.get('/reports/group-size', {
-      params: { start, end }
-    });
+  generateLapsTimeReport(start, end) {
+    return this.generateReport(start, end, 'laps');
+  }
+  generatePeopleCountReport(start, end) {
+    return this.generateReport(start, end, 'group-size');
   }
 }
 

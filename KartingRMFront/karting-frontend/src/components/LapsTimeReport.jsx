@@ -4,17 +4,16 @@ import ReportService from '../services/report.service';
 import './Reports.css';
 
 export default function LapsTimeReport() {
-  const [startDate, setStartDate]   = useState('');
-  const [endDate, setEndDate]       = useState('');
-  const [reports, setReports]       = useState([]);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate]     = useState('');
+  const [reports, setReports]     = useState([]);
 
   const handleGenerate = async e => {
     e.preventDefault();
     const start = `${startDate}T00:00:00`;
     const end   = `${endDate}T23:59:59`;
-
     try {
-      const res = await ReportService.getLapsTimeReport(start, end);
+      const res = await ReportService.generateLapsTimeReport(start, end);
       setReports(res.data);
     } catch {
       setReports([]);
@@ -41,25 +40,26 @@ export default function LapsTimeReport() {
         />
         <button type="submit">Generar</button>
       </form>
-
-      <table className="report-table">
-        <thead>
-          <tr>
-            <th>Mes</th>
-            <th>Ingresos</th>
-            <th>Reservas</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map(r => (
-            <tr key={r.aggregationKey}>
-              <td>{r.monthName}</td>
-              <td>{r.totalIncome}</td>
-              <td>{r.reservationCount}</td>
+      {reports.length > 0 && (
+        <table className="report-table">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th>Ingresos</th>
+              <th>Reservas</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {reports.map(r => (
+              <tr key={r.aggregationKey}>
+                <td>{r.monthName}</td>
+                <td>{r.totalIncome}</td>
+                <td>{r.reservationCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
