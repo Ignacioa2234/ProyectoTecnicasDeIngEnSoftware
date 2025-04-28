@@ -1,8 +1,16 @@
-.report-filters {
-    margin-bottom: 1rem;
+.reports-container {
+    margin-top: 1rem;
+  }
+  
+  .report-form {
     display: flex;
-    gap: 0.5rem;
     align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .report-form label {
+    font-weight: bold;
   }
   
   .report-table {
@@ -12,12 +20,12 @@
   
   .report-table th,
   .report-table td {
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     padding: 0.5rem;
-    text-align: center;
+    text-align: left;
   }
   
   .report-table th {
-    background-color: #f2f2f2;
+    background-color: #f5f5f5;
   }
   

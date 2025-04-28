@@ -4,78 +4,56 @@ import './Reports.css';
 
 export default function LapsTimeReport() {
   const [month, setMonth] = useState('');
-  const [report, setReport] = useState([]);
+  const [reports, setReports] = useState([]);
 
-  const generar = () => {
-    if (!month) return;
-    // month viene en formato "YYYY-MM"
-    const [y, m] = month.split('-').map(Number);
-    // start = primer día del mes
-    const start = `${y}-${String(m).padStart(2,'0')}-01`;
-    // end = último día del tercer mes (mes +2)
-    const endMonthIndex = m - 1 + 2;
-    const endYear = y + Math.floor(endMonthIndex / 12);
-    const endMonth = (endMonthIndex % 12) + 1;
-    const lastDay = new Date(endYear, endMonth, 0).getDate();
-    const end = `${endYear}-${String(endMonth).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  const handleGenerate = async e => {
+    e.preventDefault();
+    const [year, mon] = month.split('-');
+    const start = `${year}-${mon}-01T00:00:00`;
+    // JS: monthIndex = mon-1, day 0 of next month → last day of current
+    const lastDay = new Date(year, Number(mon), 0).getDate();
+    const end = `${year}-${mon}-${String(lastDay).padStart(2,'0')}T23:59:59`;
 
-    ReportService.getLapsTimeReport(start, end)
-      .then(r => setReport(r.data))
-      .catch(err => console.error(err));
+    try {
+      const res = await ReportService.getLapsTimeReport(start, end);
+      setReports(res.data);
+    } catch {
+      setReports([]);
+    }
   };
 
   return (
-    <div>
-      <h2>Reporte Ingresos por Vueltas/Tiempo (3 meses)</h2>
-      <div className="report-filters">
+    <div className="reports-container">
+      <h2>Reporte Ingresos por Vueltas/Tiempo</h2>
+      <form onSubmit={handleGenerate} className="report-form">
+        <label>Mes:</label>
         <input
           type="month"
           value={month}
           onChange={e => setMonth(e.target.value)}
+          required
         />
-        <button onClick={generar}>Generar</button>
-      </div>
+        <button type="submit">Generar</button>
+      </form>
 
-      {report.length > 0 && (
-        <table className="report-table">
-          <thead>
-            <tr>
-              <th>Tarifa</th>
-              {report.map((r, i) =>
-                <th key={i}>{r.month}</th>
-              )}
-              <th>Total</th>
+      <table className="report-table">
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>Ingresos</th>
+            <th>Reservas</th>
+          </tr>
+        </thead>
+        <tbody>
+          {reports.map(r => (
+            <tr key={r.aggregationKey}>
+              <td>{r.monthName}</td>
+              <td>{r.totalIncome}</td>
+              <td>{r.reservationCount}</td>
             </tr>
-          </thead>
-          <tbody>
-            {/*
-              Asumo que tu ReportEntity viene con:
-                - category (10,15,20 vueltas)
-                - month (p.ej "Abril")
-                - amount
-              y que el back ya devuelve 3 filas distintas, una por tarifa.
-            */}
-            {report.reduce((acc, curr) => {
-              let row = acc.find(r => r.category === curr.category);
-              if (!row) {
-                row = { category: curr.category, values: [], total: 0 };
-                acc.push(row);
-              }
-              row.values.push(curr.amount);
-              row.total += curr.amount;
-              return acc;
-            }, []).map((row, idx) => (
-              <tr key={idx}>
-                <td>{row.category}</td>
-                {row.values.map((v, j) =>
-                  <td key={j}>{v.toLocaleString()}</td>
-                )}
-                <td>{row.total.toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
