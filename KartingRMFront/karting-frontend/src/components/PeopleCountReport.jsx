@@ -1,77 +1,93 @@
 // src/components/PeopleCountReport.jsx
-import React, { useState } from 'react';
-import ReportService from '../services/report.service';
-import './Reports.css';
+import React, { useState, useEffect } from 'react';
+import { eachMonthOfInterval, format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
+import reportService from '../services/report.service';
 
 export default function PeopleCountReport() {
-  const [monthStart, setMonthStart] = useState('');
-  const [monthEnd, setMonthEnd]     = useState('');
-  const [rows, setRows]             = useState([]);
+  const [months, setMonths] = useState([]);
+  const [data, setData]     = useState({}); // { aggregationKey: { YYYY-MM: totalIncome, TOTAL: total } }
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    const [y1, m1] = monthStart.split('-');
-    const [y2, m2] = monthEnd.split('-');
-    const start = new Date(y1, m1 - 1, 1).toISOString();
-    const lastDay = new Date(y2, m2, 0).getDate();
-    const end = new Date(y2, m2 - 1, lastDay).toISOString();
+  const [startMonth, setStartMonth] = useState(() => format(new Date(), 'yyyy-MM'));
+  const [endMonth, setEndMonth]     = useState(() => format(new Date(), 'yyyy-MM'));
 
-    try {
-      const res = await ReportService.getGroupSize(start, end);
-      setRows(res.data);
-    } catch (err) {
-      console.error(err);
-      alert('Error al generar reporte');
-    }
-  };
+  useEffect(() => {
+    const start = startOfMonth(parseISO(startMonth + '-01'));
+    const end   = endOfMonth(parseISO(endMonth + '-01'));
+    const interval = eachMonthOfInterval({ start, end });
+    setMonths(interval.map(d => format(d, 'yyyy-MM')));
+
+    reportService.getGroupSizeReport(
+      start.toISOString(),
+      end.toISOString()
+    ).then(list => {
+      const table = {};
+      list.forEach(r => {
+        const key = r.aggregationKey;
+        const m   = format(parseISO(r.monthName + '-01'), 'yyyy-MM');
+        if (!table[key]) table[key] = {};
+        table[key][m] = r.totalIncome;
+      });
+      Object.keys(table).forEach(key => {
+        table[key].TOTAL = months.reduce(
+          (sum, m) => sum + (table[key][m] || 0),
+          0
+        );
+      });
+      setData(table);
+    });
+  }, [startMonth, endMonth]);
 
   return (
-    <div className="report-container">
-      <h2>Ingresos por Tamaño de Grupo</h2>
-      <form className="report-form" onSubmit={handleSubmit}>
-        <div>
-          <label>Desde (mes/año)</label>
-          <input
-            type="month"
-            value={monthStart}
-            onChange={e => setMonthStart(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Hasta (mes/año)</label>
-          <input
-            type="month"
-            value={monthEnd}
-            onChange={e => setMonthEnd(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Generar</button>
-      </form>
+    <div>
+      <h2>Reporte por Número de Personas</h2>
 
-      {rows.length > 0 && (
-        <table className="report-table">
-          <thead>
-            <tr>
-              <th>Grupo</th>
-              {rows[0].values.map((_, i) =>
-                <th key={i}>{rows[0].labels[i]}</th>
-              )}
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(row => (
-              <tr key={row.category}>
-                <td>{row.category}</td>
-                {row.values.map((v, i) => <td key={i}>{v}</td>)}
-                <td>{row.total}</td>
-              </tr>
+      <div className="row mb-3">
+        <div className="col">
+          <label>Mes Inicio</label>
+          <input
+            type="month"
+            className="form-control"
+            value={startMonth}
+            onChange={e => setStartMonth(e.target.value)}
+          />
+        </div>
+        <div className="col">
+          <label>Mes Fin</label>
+          <input
+            type="month"
+            className="form-control"
+            value={endMonth}
+            onChange={e => setEndMonth(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <table className="table table-bordered">
+        <thead>
+          <tr>
+            <th>Número de personas</th>
+            {months.map(m => (
+              <th key={m}>{format(parseISO(m + '-01'), 'LLLL yyyy')}</th>
             ))}
-          </tbody>
-        </table>
-      )}
+            <th>TOTAL</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(data).map(([key, row]) => (
+            <tr key={key}>
+              <td>{key}</td>
+              {months.map(m => (
+                <td key={m}>
+                  {new Intl.NumberFormat('es-CL').format(row[m] || 0)}
+                </td>
+              ))}
+              <td>
+                {new Intl.NumberFormat('es-CL').format(row.TOTAL || 0)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

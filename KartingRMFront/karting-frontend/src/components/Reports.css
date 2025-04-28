@@ -1,28 +1,23 @@
-.report-container {
-    margin-top: 1rem;
-  }
-  .report-form {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
+.report-filters {
     margin-bottom: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
   }
-  .report-form label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: .25rem;
-  }
+  
   .report-table {
     width: 100%;
     border-collapse: collapse;
   }
+  
   .report-table th,
   .report-table td {
-    border: 1px solid #dee2e6;
-    padding: .75rem;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    text-align: center;
   }
+  
   .report-table th {
-    background-color: #f8f9fa;
-    text-align: left;
+    background-color: #f2f2f2;
   }
   

@@ -1,72 +1,76 @@
-// src/components/LapsTimeReport.jsx
 import React, { useState } from 'react';
 import ReportService from '../services/report.service';
 import './Reports.css';
 
 export default function LapsTimeReport() {
-  const [monthStart, setMonthStart] = useState('');
-  const [monthEnd, setMonthEnd]     = useState('');
-  const [rows, setRows]             = useState([]);
+  const [month, setMonth] = useState('');
+  const [report, setReport] = useState([]);
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    const [y1, m1] = monthStart.split('-');
-    const [y2, m2] = monthEnd.split('-');
-    const start = new Date(y1, m1 - 1, 1).toISOString();
-    const lastDay = new Date(y2, m2, 0).getDate();
-    const end = new Date(y2, m2 - 1, lastDay).toISOString();
+  const generar = () => {
+    if (!month) return;
+    // month viene en formato "YYYY-MM"
+    const [y, m] = month.split('-').map(Number);
+    // start = primer día del mes
+    const start = `${y}-${String(m).padStart(2,'0')}-01`;
+    // end = último día del tercer mes (mes +2)
+    const endMonthIndex = m - 1 + 2;
+    const endYear = y + Math.floor(endMonthIndex / 12);
+    const endMonth = (endMonthIndex % 12) + 1;
+    const lastDay = new Date(endYear, endMonth, 0).getDate();
+    const end = `${endYear}-${String(endMonth).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
 
-    try {
-      const res = await ReportService.getLapsTime(start, end);
-      setRows(res.data);
-    } catch (err) {
-      console.error(err);
-      alert('Error al generar reporte');
-    }
+    ReportService.getLapsTimeReport(start, end)
+      .then(r => setReport(r.data))
+      .catch(err => console.error(err));
   };
 
   return (
-    <div className="report-container">
-      <h2>Ingresos por Vueltas / Tiempo</h2>
-      <form className="report-form" onSubmit={handleSubmit}>
-        <div>
-          <label>Desde (mes/año)</label>
-          <input
-            type="month"
-            value={monthStart}
-            onChange={e => setMonthStart(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Hasta (mes/año)</label>
-          <input
-            type="month"
-            value={monthEnd}
-            onChange={e => setMonthEnd(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Generar</button>
-      </form>
+    <div>
+      <h2>Reporte Ingresos por Vueltas/Tiempo (3 meses)</h2>
+      <div className="report-filters">
+        <input
+          type="month"
+          value={month}
+          onChange={e => setMonth(e.target.value)}
+        />
+        <button onClick={generar}>Generar</button>
+      </div>
 
-      {rows.length > 0 && (
+      {report.length > 0 && (
         <table className="report-table">
           <thead>
             <tr>
               <th>Tarifa</th>
-              {rows[0].values.map((_, i) =>
-                <th key={i}>{rows[0].labels[i]}</th>
+              {report.map((r, i) =>
+                <th key={i}>{r.month}</th>
               )}
               <th>Total</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(row => (
-              <tr key={row.category}>
+            {/*
+              Asumo que tu ReportEntity viene con:
+                - category (10,15,20 vueltas)
+                - month (p.ej "Abril")
+                - amount
+              y que el back ya devuelve 3 filas distintas, una por tarifa.
+            */}
+            {report.reduce((acc, curr) => {
+              let row = acc.find(r => r.category === curr.category);
+              if (!row) {
+                row = { category: curr.category, values: [], total: 0 };
+                acc.push(row);
+              }
+              row.values.push(curr.amount);
+              row.total += curr.amount;
+              return acc;
+            }, []).map((row, idx) => (
+              <tr key={idx}>
                 <td>{row.category}</td>
-                {row.values.map((v, i) => <td key={i}>{v}</td>)}
-                <td>{row.total}</td>
+                {row.values.map((v, j) =>
+                  <td key={j}>{v.toLocaleString()}</td>
+                )}
+                <td>{row.total.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
