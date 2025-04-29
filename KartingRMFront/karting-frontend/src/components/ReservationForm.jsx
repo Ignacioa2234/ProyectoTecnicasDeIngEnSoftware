@@ -167,7 +167,7 @@ export default function ReservationForm() {
         {/* -- DATOS DEL CLIENTE NUEVO (solo si no está logueado) -- */}
         {!user && (
           <>
-            <h5>Datos del nuevo Cliente</h5>
+            <h5>Datos del nuevo Cliente!</h5>
             <div className="row g-3 mb-4">
               <div className="col-md-3">
                 <label className="form-label">Nombre</label>
