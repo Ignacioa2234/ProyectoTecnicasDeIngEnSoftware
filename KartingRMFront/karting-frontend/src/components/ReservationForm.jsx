@@ -323,7 +323,7 @@ export default function ReservationForm() {
 
         <div className="mt-4">
           <button type="submit" className="btn btn-primary">
-            Crear Reserva
+            Booking
           </button>
         </div>
       </form>
