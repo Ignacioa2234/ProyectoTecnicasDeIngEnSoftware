@@ -1,40 +1,75 @@
 /* src/components/Reports.css */
+
+/* Contenedor general del reporte */
 .reports-container {
   margin-top: 2rem;
 }
+
+/* Deshabilitar interacción mientras carga */
+.reports-container[aria-busy='true'] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Formulario de generación */
 .report-form {
   display: flex;
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 1rem;
 }
-.report-form label { margin-right: 0.25rem; }
-.report-form input, .report-form button {
+
+.report-form label {
+  margin-right: 0.25rem;
+}
+
+.report-form input,
+.report-form button {
   padding: 0.3rem 0.6rem;
 }
+
+/* Spinner inline en el botón Generar */
+.report-form .spinner-border {
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+
+/* Tabla de fechas (Inicio / Fin) */
 .report-dates {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
+
 .report-dates td {
-  padding: 0.3rem 0.5rem;
-  border: none;
-  font-weight: bold;
+  padding: 0.25rem 0.5rem;
 }
+
+/* Tabla principal de datos */
 .report-table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 1rem;
+  text-align: center;
 }
+
 .report-table th,
 .report-table td {
   border: 1px solid #ddd;
   padding: 0.5rem;
-  text-align: center;
 }
+
 .report-table th {
   background-color: #f8f9fa;
 }
+
+/* Fila de totales al pie */
 .total-row td {
   background-color: #f1f1f1;
+}
+
+/* Mensaje de error debajo del formulario */
+.form-error {
+  color: #dc3545;
+  margin-top: 0.5rem;
 }

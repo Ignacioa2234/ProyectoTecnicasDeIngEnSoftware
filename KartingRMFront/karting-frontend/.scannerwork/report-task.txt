@@ -1,0 +1,6 @@
+projectKey=KartingRMFront
+serverUrl=https://krs0c2x7-9000.brs.devtunnels.ms
+serverVersion=25.6.0.109173
+dashboardUrl=https://krs0c2x7-9000.brs.devtunnels.ms/dashboard?id=KartingRMFront
+ceTaskId=ef894f03-f14c-4ed8-8061-23d048d02510
+ceTaskUrl=https://krs0c2x7-9000.brs.devtunnels.ms/api/ce/task?id=ef894f03-f14c-4ed8-8061-23d048d02510

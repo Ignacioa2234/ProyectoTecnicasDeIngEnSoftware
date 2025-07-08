@@ -1,7 +1,6 @@
 // src/App.jsx
 import React from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
-import Login from './components/Login'
 import ReservationForm from './components/ReservationForm'
 import WeeklyRack from './components/WeeklyRack'
 import LapsTimeReport from './components/LapsTimeReport'
@@ -14,7 +13,6 @@ export default function App() {
         <Link className="navbar-brand" to="/">KartingApp</Link>
         <div className="navbar-nav">
           <Link className="nav-link" to="/">Crear Reserva</Link>
-          <Link className="nav-link" to="/login">Login</Link>
           <Link className="nav-link" to="/rack">Rack Semanal</Link>
           <Link className="nav-link" to="/reports/laps">Reporte Vueltas/Tiempo</Link>
           <Link className="nav-link" to="/reports/groups">Reporte # Personas</Link>
@@ -24,7 +22,6 @@ export default function App() {
       <div className="container mt-4">
         <Routes>
           <Route path="/"                   element={<ReservationForm />} />
-          <Route path="/login"              element={<Login />} />
           <Route path="/rack"               element={<WeeklyRack />} />
           <Route path="/reports/laps"       element={<LapsTimeReport />} />
           <Route path="/reports/groups"     element={<PeopleCountReport />} />
